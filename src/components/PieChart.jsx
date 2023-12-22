@@ -1,14 +1,37 @@
+import React, { useEffect, useState } from 'react';
 import { ResponsivePie } from "@nivo/pie";
 import { tokens } from "../theme";
 import { useTheme } from "@mui/material";
-import { mockPieData as data } from "../data/mockData";
 
 const PieChart = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [pieData, setPieData] = useState([]);
+
+  useEffect(() => {
+    getPieDataFromApi();
+  }, []);
+
+  const getPieDataFromApi = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/pietotal'); // Reemplaza con la URL correcta
+      const data = await response.json();
+
+      const formattedData = data.map((record) => ({
+        id: record.proveedor,
+        label: `${record.proveedor} - ${record.mes}`,
+        value: record.totalProductos,
+      }));
+
+      setPieData(formattedData);
+    } catch (error) {
+      console.error('Error al obtener datos desde la API:', error);
+    }
+  };
+
   return (
     <ResponsivePie
-      data={data}
+      data={pieData}
       theme={{
         axis: {
           domain: {
@@ -107,3 +130,4 @@ const PieChart = () => {
 };
 
 export default PieChart;
+

@@ -1,99 +1,61 @@
-import { Box } from "@mui/material";
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { tokens } from "../../theme";
-import { mockDataContacts } from "../../data/mockData";
-import Header from "../../components/Header";
-import { useTheme } from "@mui/material";
+// scenes/contacts.tsx
+import React, { useState, useEffect } from 'react';
+import { Box } from '@mui/material';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import Header from '../../components/Header';
+import { useTheme } from '@mui/material';
 
 const Contacts = () => {
   const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
+
+  const [products, setProducts] = useState([]);
+  const colors = theme.palette.mode;
+
+  useEffect(() => {
+    // Cuando el componente se monta, realiza la solicitud para obtener los productos
+    getProducts();
+  }, []); // El segundo argumento asegura que se llama solo una vez al montar el componente
+
+  const getProducts = async () => {
+    try {
+      // Reemplaza la URL con la ruta correcta de tu API de productos
+      const response = await fetch('http://localhost:4000/products');
+      const data = await response.json();
+      // Asegúrate de que cada fila tenga una propiedad 'id' única
+      const productsWithId = data.map((product, index) => ({ ...product, id: index + 1 }));
+      setProducts(productsWithId);
+    } catch (error) {
+      console.error('Error al obtener productos:', error);
+    }
+  };
 
   const columns = [
-    { field: "id", headerName: "ID", flex: 0.5 },
-    { field: "registrarId", headerName: "Registrar ID" },
-    {
-      field: "name",
-      headerName: "Name",
-      flex: 1,
-      cellClassName: "name-column--cell",
-    },
-    {
-      field: "age",
-      headerName: "Age",
-      type: "number",
-      headerAlign: "left",
-      align: "left",
-    },
-    {
-      field: "phone",
-      headerName: "Phone Number",
-      flex: 1,
-    },
-    {
-      field: "email",
-      headerName: "Email",
-      flex: 1,
-    },
-    {
-      field: "address",
-      headerName: "Address",
-      flex: 1,
-    },
-    {
-      field: "city",
-      headerName: "City",
-      flex: 1,
-    },
-    {
-      field: "zipCode",
-      headerName: "Zip Code",
-      flex: 1,
-    },
+    { field: 'id', headerName: 'ID', width: 70 },
+    { field: 'Name', headerName: 'Name', width: 150 },
+    { field: 'Description', headerName: 'Description', width: 300 },
+    { field: 'Quantity', headerName: 'Quantity', width: 120 },
+    // Agrega más columnas según la estructura de tus datos
   ];
 
   return (
     <Box m="20px">
-      <Header
-        title="PROVIDERS"
-        subtitle="List of Providers"
-      />
+      <Header title="PRODUCTS" subtitle="List of Products" />
       <Box
         m="40px 0 0 0"
         height="75vh"
         sx={{
-          "& .MuiDataGrid-root": {
-            border: "none",
+          '& .MuiDataGrid-root': {
+            border: 'none',
           },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-          },
-          "& .name-column--cell": {
-            color: colors.greenAccent[300],
-          },
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: colors.blueAccent[700],
-            borderBottom: "none",
-          },
-          "& .MuiDataGrid-virtualScroller": {
-            backgroundColor: colors.primary[400],
-          },
-          "& .MuiDataGrid-footerContainer": {
-            borderTop: "none",
-            backgroundColor: colors.blueAccent[700],
-          },
-          "& .MuiCheckbox-root": {
-            color: `${colors.greenAccent[200]} !important`,
-          },
-          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-            color: `${colors.grey[100]} !important`,
-          },
+          // ... Agrega estilos adicionales según tus necesidades
         }}
       >
         <DataGrid
-          rows={mockDataContacts}
+          rows={products}
           columns={columns}
-          components={{ Toolbar: GridToolbar }}
+          pageSize={10}
+          checkboxSelection
+          rowsPerPageOptions={[10]}
         />
       </Box>
     </Box>
@@ -101,3 +63,5 @@ const Contacts = () => {
 };
 
 export default Contacts;
+
+

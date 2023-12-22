@@ -3,7 +3,7 @@ import { useTheme } from '@mui/material';
 import { ResponsiveBar, Tooltip as NivoTooltip } from '@nivo/bar';
 import { tokens } from '../theme';
 
-const BarChart = ({ isDashboard = false }) => {
+const BarChart3 = ({ isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
 
@@ -15,14 +15,14 @@ const BarChart = ({ isDashboard = false }) => {
 
   const getSalesData = async () => {
     try {
-      const response = await fetch('http://localhost:4000/sales');
+      const response = await fetch('http://localhost:4000/pietotal');
       const rawData = await response.json();
 
-      const formattedData = rawData.map((sale) => ({
-        id: `${sale.mes.trim()} - ${sale.producto.trim()}`, // Combina mes y producto como identificador único
-        value: sale.cantidad,
-        mes: sale.mes.trim(),
-        producto: sale.producto.trim(),
+      const formattedData = rawData.map((pie) => ({
+        id: `${pie.mes.trim()} - ${pie.proveedor.trim()}`, // Combine mes y proveedor
+        value: pie.totalProductos,
+        mes: pie.mes.trim(),
+        proveedor: pie.proveedor.trim(),
       }));
 
       setSalesData(formattedData);
@@ -55,8 +55,8 @@ const BarChart = ({ isDashboard = false }) => {
         },
       }}
       keys={['value']}
-      indexBy="id" // Utiliza la combinación de mes y producto como identificador único
-      margin={{ top: 80, right: 130, bottom: 50, left: 60 }}
+      indexBy="id" // Utiliza la combinación de mes y proveedor como identificador único
+      margin={{ top: 80, right: 130, bottom: 80, left: 60 }} // Aumenta el espacio en la parte inferior para las etiquetas
       padding={0.3}
       valueScale={{ type: 'linear' }}
       indexScale={{ type: 'band', round: true }}
@@ -71,14 +71,7 @@ const BarChart = ({ isDashboard = false }) => {
         tickSize: 5,
         tickPadding: 5,
         tickRotation: 0,
-        legend: isDashboard ? undefined : (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Total</span>
-            {salesData.map((sale) => (
-              <span key={sale.id}>{sale.mes}</span>
-            ))}
-          </div>
-        ),
+        legend: isDashboard ? undefined : null,
         legendPosition: 'middle',
         legendOffset: 32,
       }}
@@ -121,7 +114,7 @@ const BarChart = ({ isDashboard = false }) => {
             >
               <strong>{data.mes}</strong>
               <br />
-              <span style={{ fontWeight: 'bold', color: colors[0] }}>{data.producto}</span>: {value}
+              <span style={{ fontWeight: 'bold', color: colors[0] }}>{data.proveedor}</span>: {value}
             </div>
           )}
         />
@@ -130,6 +123,4 @@ const BarChart = ({ isDashboard = false }) => {
   );
 };
 
-export default BarChart;
-
-
+export default BarChart3;

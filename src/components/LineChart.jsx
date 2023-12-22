@@ -1,40 +1,82 @@
+import React, { useEffect, useState } from 'react';
 import { ResponsiveLine } from "@nivo/line";
 import { useTheme } from "@mui/material";
 import { tokens } from "../theme";
-import { mockLineData as data } from "../data/mockData";
 
-const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
+const LineChart = ({ isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [lineChartData, setLineChartData] = useState([]);
+
+  useEffect(() => {
+    getLineChartDataFromApi();
+  }, []);
+
+  const getLineChartDataFromApi = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/totales'); // Reemplaza con la URL correcta
+      const data = await response.json();
+
+      const formattedData = data.reduce((acc, record) => {
+        const monthYear = `${record.mes.trim()}`;
+        
+        const existingIndex = acc.findIndex((item) => item.id === 'totalFacturas');
+        if (existingIndex !== -1) {
+          acc[existingIndex].data.push({ x: monthYear, y: record.totalFacturas });
+        } else {
+          acc.push({
+            id: 'totalFacturas',
+            data: [{ x: monthYear, y: record.totalFacturas }],
+          });
+        }
+
+        const existingBoletasIndex = acc.findIndex((item) => item.id === 'totalRecaudacion');
+        if (existingBoletasIndex !== -1) {
+          acc[existingBoletasIndex].data.push({ x: monthYear, y: record.totalRecaudacion });
+        } else {
+          acc.push({
+            id: 'totalRecaudacion',
+            data: [{ x: monthYear, y: record.totalRecaudacion }],
+          });
+        }
+
+        return acc;
+      }, []);
+
+      setLineChartData(formattedData);
+    } catch (error) {
+      console.error('Error al obtener datos desde la API:', error);
+    }
+  };
 
   return (
     <ResponsiveLine
-      data={data}
+      data={lineChartData}
       theme={{
         axis: {
           domain: {
             line: {
-              stroke: colors.grey[100],
+              stroke: '#FFF',
             },
           },
           legend: {
             text: {
-              fill: colors.grey[100],
+              fill: '#FFF',
             },
           },
           ticks: {
             line: {
-              stroke: colors.grey[100],
+              stroke: '#FFF',
               strokeWidth: 1,
             },
             text: {
-              fill: colors.grey[100],
+              fill: '#FFF',
             },
           },
         },
         legends: {
           text: {
-            fill: colors.grey[100],
+            fill: '#FFF',
           },
         },
         tooltip: {
@@ -43,14 +85,13 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
           },
         },
       }}
-      colors={isDashboard ? { datum: "color" } : { scheme: "nivo" }} // added
       margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
       xScale={{ type: "point" }}
       yScale={{
         type: "linear",
-        min: "auto",
+        min: 0,  // Establecer el mínimo a 0 o al valor mínimo que desees
         max: "auto",
-        stacked: true,
+        stacked: false,
         reverse: false,
       }}
       yFormat=" >-.2f"
@@ -62,17 +103,17 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
         tickSize: 0,
         tickPadding: 5,
         tickRotation: 0,
-        legend: isDashboard ? undefined : "transportation", // added
+        legend: isDashboard ? undefined : null,
         legendOffset: 36,
         legendPosition: "middle",
       }}
       axisLeft={{
         orient: "left",
-        tickValues: 5, // added
+        tickValues: 5,
         tickSize: 3,
         tickPadding: 5,
         tickRotation: 0,
-        legend: isDashboard ? undefined : "count", // added
+        legend: isDashboard ? undefined : 'Total',
         legendOffset: -40,
         legendPosition: "middle",
       }}
